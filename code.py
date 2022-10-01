@@ -1,11 +1,7 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
+# Circuitpython code to run a PMSA003I Air Quality
+# monitor and display results to an ILI9341 display. 
+# Screen Timeout is controlled by a VL53L1X ToF distance sensor.
 
-"""
-Example sketch to connect to PM2.5 sensor with either I2C or UART.
-"""
-
-# pylint: disable=unused-import
 import time
 import board
 import busio
