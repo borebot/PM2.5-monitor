@@ -140,7 +140,7 @@ class Sensorvals:
 
 sensorvals = Sensorvals()
 
-
+# Coroutine to read distance from VL53L1X sensor.
 async def vl53_read(sensorvals):
     while True:
         try:
@@ -152,7 +152,7 @@ async def vl53_read(sensorvals):
             print("ranging fail.")
         await asyncio.sleep(0.2)
 
-
+#Coroutine to handle Screen Timeout.
 async def screen_timeout(sensorvals):
     start_time = time.monotonic()
     timeout_time = 30
@@ -174,7 +174,7 @@ async def screen_timeout(sensorvals):
             print("screen timeout fail.")
         await asyncio.sleep(0.2)
 
-
+#Coroutine to read Air Quality data and display on screen.
 async def pm25_read(sensorvals):
     while True:
         try:
@@ -210,7 +210,7 @@ async def pm25_read(sensorvals):
             print("Unable to read from sensor, retrying...")
         await asyncio.sleep(1.0)
 
-
+#Coroutine to display animated face, and set PM2.5 ranges for "mood".
 async def face_display(sensorvals):
     while True:
         sleeptime = random.random() * 3.0
