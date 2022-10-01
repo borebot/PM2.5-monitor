@@ -76,14 +76,14 @@ disp_label_4 = label.Label(
     font, text=disp_text_4, color=text_color, scale=1, line_spacing=0.9
 )
 disp_label_4.x = 45
-disp_label_4.y = 240
+disp_label_4.y = 230
 
 disp_text_5 = ""
 disp_label_5 = label.Label(
     font, text=disp_text_5, color=text_color, scale=1, line_spacing=0.9
 )
 disp_label_5.x = 90
-disp_label_5.y = 255
+disp_label_5.y = 245
 
 # COULD NOT FIGURE OUT HOW TO GET BACKLIGHT ON/OFF WORKING WITHOUT MESSING UP DISPLAY!
 # backlight_led = pwmio.PWMOut(board.A5, frequency = 5000, duty_cycle = 0)
@@ -109,7 +109,7 @@ face_sprites = displayio.TileGrid(
 face_sprites_group = displayio.Group(scale=15)
 face_sprites_group.append(face_sprites)
 face_sprites_group.x = 0
-face_sprites_group.y = 35
+face_sprites_group.y = 25
 
 splash.append(face_sprites_group)
 splash.append(disp_label_1)
