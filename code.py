@@ -1,6 +1,8 @@
 # Circuitpython code to run a PMSA003I Air Quality
-# monitor and display results to an ILI9341 display. 
+# monitor and display results to an ILI9341 display.
 # Screen Timeout is controlled by a VL53L1X ToF distance sensor.
+# Main Board: Adafruit ESP32-S3 Feather (this code needs built-in Wifi.)
+# If running on a different main board, might have to modify for a wifi coprocessor.
 
 import time
 import board
@@ -18,7 +20,13 @@ from analogio import AnalogOut
 import random
 
 import adafruit_vl53l1x
-
+import supervisor
+import microcontroller
+import ssl
+import socketpool
+import wifi
+import adafruit_minimqtt.adafruit_minimqtt as MQTT
+from secrets import secrets
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
 
@@ -120,6 +128,58 @@ pm25_reset_pin = None
 pm25 = PM25_I2C(i2c, pm25_reset_pin)
 
 
+try:
+    wifi.radio.connect(secrets["ssid"], secrets["password"])
+except:
+    print("hard resetting in 5 seconds...")
+    time.sleep(5)
+    microcontroller.reset()
+
+def connected(client, userdata, flags, rc):
+    # This function will be called when the client is connected
+    # successfully to the broker.
+    #print("Connected to Adafruit IO! Listening for topic changes on %s" % onoff_feed)
+    # Subscribe to all changes on the onoff_feed.
+    #client.subscribe(onoff_feed)
+    print("placeholder1")
+
+
+def disconnected(client, userdata, rc):
+    # This method is called when the client is disconnected
+    print("Disconnected from Adafruit IO!")
+
+
+def message(client, topic, message):
+    # This method is called when a topic the client is subscribed to
+    # has a new message.
+    #print("New message on topic {0}: {1}".format(topic, message))
+    print("placeholder2")
+
+
+# Create a socket pool
+pool = socketpool.SocketPool(wifi.radio)
+
+# Set up a MiniMQTT Client
+mqtt_client = MQTT.MQTT(
+    broker=secrets["broker"],
+    port=secrets["port"],
+    username=secrets["aio_username"],
+    password=secrets["aio_key"],
+    socket_pool=pool,
+    ssl_context=ssl.create_default_context(),
+)
+
+# Setup the callback methods above
+mqtt_client.on_connect = connected
+mqtt_client.on_disconnect = disconnected
+mqtt_client.on_message = message
+
+# Connect the client to the MQTT broker.
+print("Connecting to Adafruit IO...")
+mqtt_client.connect()
+
+pm25_feed = secrets["aio_username"] + secrets["feed"]
+
 class Sensorvals:
     def __init__(self):
         # air quality
@@ -145,7 +205,7 @@ async def vl53_read(sensorvals):
     while True:
         try:
             if vl53.data_ready:
-                print("Distance: {} cm".format(vl53.distance))
+                #print("Distance: {} cm".format(vl53.distance))
                 sensorvals.vl53_cm = vl53.distance
                 vl53.clear_interrupt()
         except:
@@ -250,12 +310,22 @@ async def face_display(sensorvals):
             print("face fail")
         await asyncio.sleep(sleeptime)
 
-
+async def mqtt_send(sensorvals):
+    while True:
+        try:
+            if sensorvals.pm25 is not None:
+                mqtt_client.publish(pm25_feed, sensorvals.pm25)
+                print("pm25 data published!" + " Value: " + str(sensorvals.pm25))
+        except:
+            print ("mqtt fail.")
+        await asyncio.sleep(30)
+    
 async def main():
     vl53_read_task = asyncio.create_task(vl53_read(sensorvals))
     pm25_read_task = asyncio.create_task(pm25_read(sensorvals))
     face_display_task = asyncio.create_task(face_display(sensorvals))
     screen_timeout_task = asyncio.create_task(screen_timeout(sensorvals))
+    mqtt_send_task = asyncio.create_task(mqtt_send(sensorvals))
 
     await asyncio.gather(vl53_read_task)
 
