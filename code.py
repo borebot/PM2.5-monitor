@@ -1,8 +1,6 @@
 # Circuitpython code to run a PMSA003I Air Quality
 # monitor and display results to an ILI9341 display.
 # Screen Timeout is controlled by a VL53L1X ToF distance sensor.
-# Main Board: Adafruit ESP32-S3 Feather (this code needs built-in Wifi.)
-# If running on a different main board, might have to modify for a wifi coprocessor.
 
 import time
 import board
@@ -319,7 +317,7 @@ async def mqtt_send(sensorvals):
         except:
             print ("mqtt fail.")
         await asyncio.sleep(30)
-    
+
 async def main():
     vl53_read_task = asyncio.create_task(vl53_read(sensorvals))
     pm25_read_task = asyncio.create_task(pm25_read(sensorvals))
