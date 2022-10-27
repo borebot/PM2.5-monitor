@@ -129,8 +129,8 @@ pm25 = PM25_I2C(i2c, pm25_reset_pin)
 try:
     wifi.radio.connect(secrets["ssid"], secrets["password"])
 except:
-    print("hard resetting in 5 seconds...")
-    time.sleep(5)
+    print("hard resetting in 15 seconds...")
+    time.sleep(15)
     microcontroller.reset()
 
 def connected(client, userdata, flags, rc):
